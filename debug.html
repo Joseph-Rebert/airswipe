@@ -1,0 +1,40 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>AirSwipe – camera view</title>
+<style>
+  body { margin: 24px; background: #111; color: #eee; font: 15px system-ui, sans-serif; }
+  main { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+  /* Mirrored, so moving your hand right moves it right on screen. */
+  #stage { position: relative; width: 640px; max-width: 100%; aspect-ratio: 4 / 3; background: #000; transform: scaleX(-1); border-radius: 8px; overflow: hidden; }
+  #stage img, #stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #panel { width: 300px; }
+  h1 { font-size: 18px; margin: 0 0 16px; }
+  .label { color: #999; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 18px; }
+  #verdict { font-size: 20px; min-height: 52px; }
+  #verdict.swipe { color: #4ade80; font-weight: 600; }
+  #verdict.ignored { color: #fbbf24; }
+  #meter { position: relative; height: 14px; background: #333; border-radius: 7px; overflow: hidden; margin-top: 6px; }
+  #fill { height: 100%; width: 0; background: #60a5fa; }
+  #fill.enough { background: #4ade80; }
+  #log { margin: 6px 0 0; padding: 0; list-style: none; font-variant-numeric: tabular-nums; }
+  #log li { padding: 2px 0; }
+  p.hint { color: #999; font-size: 13px; }
+</style>
+<main>
+  <div id="stage">
+    <img id="frame" alt="">
+    <canvas id="overlay" width="640" height="480"></canvas>
+  </div>
+  <div id="panel">
+    <h1>What the extension sees</h1>
+    <div class="label">Decision this frame</div>
+    <div id="verdict">starting…</div>
+    <div class="label">Movement <span id="direction"></span></div>
+    <div id="meter"><div id="fill"></div></div>
+    <p class="hint">The bar fills as your fingertip travels. A full bar is far enough to count as a swipe.</p>
+    <div class="label">Recent swipes</div>
+    <ul id="log"></ul>
+    <p class="hint">Make a fist to choose a hand; it stays chosen until it leaves the picture for a second. The chosen hand is drawn in colour, any other hand in grey. Dots are the 21 hand points the model found. The picture is exactly the frame the model was given, so anything outside it cannot be seen. The large dot is the index fingertip, and the line behind it is its recent path.</p>
+  </div>
+</main>
+<script src="debug.js"></script>

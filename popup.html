@@ -1,0 +1,19 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>
+  body { width: 220px; margin: 12px; font: 14px system-ui, sans-serif; }
+  button { width: 100%; padding: 8px; margin-top: 6px; font: inherit; cursor: pointer; }
+  .row { display: flex; gap: 6px; }
+  p { margin: 12px 0 0; color: #666; font-size: 12px; }
+  #error { color: #b00020; }
+</style>
+<button id="toggle">…</button>
+<p>Test without the camera:</p>
+<div class="row">
+  <button id="test-up">Swipe up</button>
+  <button id="test-down">Swipe down</button>
+</div>
+<p id="status"></p>
+<button id="view">Show what the camera sees</button>
+<p id="error"></p>
+<script src="popup.js"></script>
