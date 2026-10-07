@@ -17,13 +17,27 @@ const INDEX_FINGERTIP = 8;
 
 // Tuning knobs.
 const WINDOW_MS = 220; // a swipe must happen within this long
-const MIN_TRAVEL = 0.7; // ...and cover this many palm lengths. Lower = more sensitive
 const STRAIGHTNESS = 1.5; // must move this much more vertically than sideways
-const COOLDOWN_MS = 350; // shortest gap between two swipes
 const WARMUP_MS = 300; // ignore a hand that has only just come into view
 const LOST_MS = 200; // tolerate the hand vanishing this long (fast moves blur)
 const RETURN_BLOCK_MS = 1200; // longest time the return movement stays ignored
 const STILL_TRAVEL = 0.3; // moving less than this over the window counts as holding still
+
+// How many palm lengths the fingertip must cover. Set by the popup's slider.
+let minTravel = 0.7;
+
+// level runs from 1 (needs big swipes) to 10 (small flicks count); 5 is the default.
+export function setSensitivity(level) {
+  minTravel = 0.7 * 1.15 ** (5 - level);
+  debug.needed = minTravel;
+}
+
+// Shortest gap between two swipes. Set by the popup's slider.
+let cooldownMs = 350;
+
+export function setCooldown(ms) {
+  cooldownMs = ms;
+}
 
 let samples = [];
 let palm = 0;
@@ -36,7 +50,15 @@ let lastDirection = null;
 let returnBlocked = false;
 
 // What the detector decided on the latest frame, for the camera view page.
-export const debug = { verdict: 'no hand in view', direction: null, travel: 0, needed: MIN_TRAVEL };
+export const debug = { verdict: 'no hand in view', direction: null, travel: 0, needed: 0.7 };
+
+// Forget the fingertip's recent path. Called when a different hand takes
+// over, so the jump from one hand to the other is not read as a swipe.
+export function resetSwipe() {
+  samples = [];
+  palm = 0;
+  visibleSince = null;
+}
 
 export function detectSwipe(hand, now, aspect = 4 / 3) {
   if (!hand) {
@@ -84,7 +106,7 @@ export function detectSwipe(hand, now, aspect = 4 / 3) {
   const sideways = (Math.abs(tip.x - from.x) * aspect) / palm;
 
   Object.assign(debug, { direction, travel });
-  if (travel < MIN_TRAVEL) {
+  if (travel < minTravel) {
     debug.verdict = 'watching: movement too small or too slow';
     return null;
   }
@@ -96,7 +118,7 @@ export function detectSwipe(hand, now, aspect = 4 / 3) {
     debug.verdict = 'ignored: hand only just appeared';
     return null;
   }
-  if (sinceSwipe < COOLDOWN_MS) {
+  if (sinceSwipe < cooldownMs) {
     debug.verdict = 'ignored: too soon after the last swipe';
     return null;
   }

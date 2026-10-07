@@ -1,12 +1,22 @@
 <!doctype html>
 <meta charset="utf-8">
 <title>AirSwipe – camera access</title>
+<link rel="stylesheet" href="ui.css">
 <style>
-  body { max-width: 420px; margin: 80px auto; font: 16px system-ui, sans-serif; }
-  button { padding: 10px 16px; font: inherit; cursor: pointer; }
+  body { display: grid; place-items: center; min-height: 100vh; padding: 24px; font-size: 15px; }
+  .card { width: 100%; max-width: 440px; padding: 28px; text-align: center; }
+  .card > img { width: 64px; height: 64px; }
+  h1 { font-size: 22px; margin: 14px 0 8px; }
+  p { margin: 0 0 18px; color: var(--muted); }
+  button { padding: 10px 20px; font-size: 15px; }
+  #status { margin: 18px 0 0; text-align: left; white-space: pre-wrap; color: var(--text); }
+  #status:empty { display: none; }
 </style>
-<h1>AirSwipe</h1>
-<p>The extension needs your webcam to see finger swipes. Video is processed on this computer and never leaves it.</p>
-<button id="allow">Allow camera</button>
-<p id="status" style="white-space: pre-wrap"></p>
+<div class="card">
+  <img src="icons/icon128.png" alt="">
+  <h1>Let AirSwipe see your hand</h1>
+  <p>AirSwipe needs your webcam to spot finger swipes. Video is processed on this computer and never leaves it.</p>
+  <button id="allow" class="primary">Allow camera</button>
+  <p id="status"></p>
+</div>
 <script src="permission.js"></script>

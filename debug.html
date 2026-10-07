@@ -1,40 +1,62 @@
 <!doctype html>
 <meta charset="utf-8">
 <title>AirSwipe – camera view</title>
+<link rel="stylesheet" href="ui.css">
 <style>
-  body { margin: 24px; background: #111; color: #eee; font: 15px system-ui, sans-serif; }
-  main { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+  body { padding: 24px; font-size: 15px; }
+  header { margin-bottom: 20px; }
+  header .muted { margin-left: auto; font-size: 13px; }
+  main { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
   /* Mirrored, so moving your hand right moves it right on screen. */
-  #stage { position: relative; width: 640px; max-width: 100%; aspect-ratio: 4 / 3; background: #000; transform: scaleX(-1); border-radius: 8px; overflow: hidden; }
+  #stage { position: relative; flex: 1 1 520px; max-width: 760px; aspect-ratio: 4 / 3; background: #000; transform: scaleX(-1); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
   #stage img, #stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-  #panel { width: 300px; }
-  h1 { font-size: 18px; margin: 0 0 16px; }
-  .label { color: #999; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 18px; }
-  #verdict { font-size: 20px; min-height: 52px; }
-  #verdict.swipe { color: #4ade80; font-weight: 600; }
-  #verdict.ignored { color: #fbbf24; }
-  #meter { position: relative; height: 14px; background: #333; border-radius: 7px; overflow: hidden; margin-top: 6px; }
-  #fill { height: 100%; width: 0; background: #60a5fa; }
-  #fill.enough { background: #4ade80; }
-  #log { margin: 6px 0 0; padding: 0; list-style: none; font-variant-numeric: tabular-nums; }
-  #log li { padding: 2px 0; }
-  p.hint { color: #999; font-size: 13px; }
+  #stage img:not([src]) { visibility: hidden; }
+  #panel { flex: 0 1 320px; display: grid; gap: 12px; }
+  #verdict { font-size: 19px; font-weight: 600; min-height: 56px; margin-top: 6px; }
+  #verdict.swipe { color: var(--good); }
+  #verdict.ignored { color: var(--warn); }
+  #meter { height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; margin: 10px 0 8px; }
+  #fill { height: 100%; width: 0; background: var(--brand); border-radius: 5px; }
+  #fill.enough { background: var(--good); }
+  #log { margin: 6px 0 0; padding: 0; list-style: none; font-variant-numeric: tabular-nums; font-size: 14px; }
+  #log li { padding: 3px 0; }
+  #log:empty::after { content: 'None yet.'; color: var(--muted); font-size: 13px; }
+  .key { margin: 0; padding: 0; list-style: none; }
+  .key li { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+  .swatch { width: 10px; height: 10px; border-radius: 50%; flex: none; }
 </style>
+<header class="brand">
+  <img src="icons/icon48.png" alt="">
+  <h1>AirSwipe camera view</h1>
+  <span class="muted">Exactly what the extension sees. Nothing here is recorded.</span>
+</header>
 <main>
   <div id="stage">
     <img id="frame" alt="">
     <canvas id="overlay" width="640" height="480"></canvas>
   </div>
   <div id="panel">
-    <h1>What the extension sees</h1>
-    <div class="label">Decision this frame</div>
-    <div id="verdict">starting…</div>
-    <div class="label">Movement <span id="direction"></span></div>
-    <div id="meter"><div id="fill"></div></div>
-    <p class="hint">The bar fills as your fingertip travels. A full bar is far enough to count as a swipe.</p>
-    <div class="label">Recent swipes</div>
-    <ul id="log"></ul>
-    <p class="hint">Make a fist to choose a hand; it stays chosen until it leaves the picture for a second. The chosen hand is drawn in colour, any other hand in grey. Dots are the 21 hand points the model found. The picture is exactly the frame the model was given, so anything outside it cannot be seen. The large dot is the index fingertip, and the line behind it is its recent path.</p>
+    <div class="card">
+      <div class="label">Decision this frame</div>
+      <div id="verdict">starting…</div>
+    </div>
+    <div class="card">
+      <div class="label">Movement <span id="direction"></span></div>
+      <div id="meter"><div id="fill"></div></div>
+      <div class="muted">Fills as your fingertip travels. A full bar is far enough to count as a swipe.</div>
+    </div>
+    <div class="card">
+      <div class="label">Recent swipes</div>
+      <ul id="log"></ul>
+    </div>
+    <div class="card">
+      <div class="label">How to read the picture</div>
+      <ul class="key muted">
+        <li><span class="swatch" style="background:#60a5fa"></span>Chosen hand (make a fist to choose)</li>
+        <li><span class="swatch" style="background:#a0a0a0"></span>Other hand, ignored</li>
+        <li><span class="swatch" style="background:#4ade80"></span>Index fingertip and its recent path</li>
+      </ul>
+    </div>
   </div>
 </main>
 <script src="debug.js"></script>

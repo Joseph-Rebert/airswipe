@@ -1,19 +1,106 @@
 <!doctype html>
 <meta charset="utf-8">
+<link rel="stylesheet" href="ui.css">
 <style>
-  body { width: 220px; margin: 12px; font: 14px system-ui, sans-serif; }
-  button { width: 100%; padding: 8px; margin-top: 6px; font: inherit; cursor: pointer; }
-  .row { display: flex; gap: 6px; }
-  p { margin: 12px 0 0; color: #666; font-size: 12px; }
-  #error { color: #b00020; }
+  body { width: 300px; padding: 12px; }
+  .brand { margin-bottom: 8px; }
+  .brand img { width: 24px; height: 24px; }
+  .card { padding: 12px 14px; }
+  .camera { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  #state { font-weight: 600; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); margin-right: 6px; }
+  .on .dot { background: var(--good); }
+  ol { margin: 8px 0 0; padding-left: 18px; }
+  #view { width: 100%; margin-top: 8px; }
+  .card > .label { display: block; margin-top: 10px; }
+  select { width: 100%; margin-top: 5px; padding: 7px 8px; font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 9px; }
+  #stale { margin-bottom: 10px; border-color: var(--brand); }
+  #stale button { width: 100%; margin-top: 10px; }
+  #status, #error { margin: 8px 0 0; }
+  #error { color: var(--bad); }
+  #status:empty, #error:empty { display: none; }
+
+  details { margin-top: 8px; border: 1px solid var(--border); border-radius: 12px; }
+  summary { padding: 8px 14px; font-weight: 600; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: '›'; color: var(--muted); font-size: 18px; line-height: 1; transition: transform 0.15s; }
+  details[open] summary::after { transform: rotate(90deg); }
+  .body { padding: 0 14px 12px; }
+
+  .settings input[type="range"] { display: block; width: 100%; margin: 6px 0 2px; accent-color: var(--brand); }
+  .settings .label { display: flex; justify-content: space-between; }
+  .settings .label span { text-transform: none; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+  .ends { display: flex; justify-content: space-between; font-size: 11.5px; }
+  .ends + .label, .segmented + .label { margin-top: 8px; }
+  .segmented { display: flex; margin-top: 6px; padding: 3px; gap: 3px; border-radius: 10px; background: var(--border); }
+  .segmented label { flex: 1; position: relative; }
+  .segmented input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+  .segmented span { display: block; padding: 6px 0; border-radius: 8px; text-align: center; font-weight: 550; color: var(--muted); }
+  .segmented input:checked + span { background: var(--bg); color: var(--text); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15); }
+  .segmented input:focus-visible + span { outline: 2px solid var(--brand); outline-offset: 1px; }
+  .row { display: flex; gap: 8px; margin-top: 6px; }
+  .row button { flex: 1; }
 </style>
-<button id="toggle">…</button>
-<p>Test without the camera:</p>
-<div class="row">
-  <button id="test-up">Swipe up</button>
-  <button id="test-down">Swipe down</button>
+<div class="brand">
+  <img src="icons/icon48.png" alt="">
+  <h1>AirSwipe</h1>
 </div>
-<p id="status"></p>
-<button id="view">Show what the camera sees</button>
-<p id="error"></p>
+
+<div class="card" id="stale" hidden>
+  <div><strong>Update ready</strong></div>
+  <div class="muted">Newer files are on disk than the ones Chrome is running, so recent changes are not active yet.</div>
+  <button id="reload" class="primary">Reload AirSwipe</button>
+</div>
+
+<div class="card">
+  <div class="camera" id="camera">
+    <div>
+      <div id="state"><span class="dot"></span><span id="state-text">Camera off</span></div>
+      <div class="muted" id="hint">Turn on to scroll with your hand.</div>
+    </div>
+    <label class="switch">
+      <input type="checkbox" id="toggle" aria-label="Camera">
+      <span class="track"></span>
+    </label>
+  </div>
+  <ol class="muted">
+    <li>Make a fist to choose your hand.</li>
+    <li id="how">Open it and flick up for the next video, down for the previous.</li>
+  </ol>
+  <label class="label" for="camera-select">Camera</label>
+  <select id="camera-select"><option value="">Chrome's default camera</option></select>
+  <button id="view">Show what the camera sees</button>
+  <p id="error" class="muted"></p>
+</div>
+
+<details open>
+  <summary>Swipe settings</summary>
+  <div class="body settings">
+    <label class="label" for="sensitivity">Sensitivity</label>
+    <input type="range" id="sensitivity" min="1" max="10" step="1" value="5">
+    <div class="ends muted"><span>Big swipes</span><span>Small flicks</span></div>
+
+    <label class="label" for="cooldown">Time between swipes <span id="cooldown-value"></span></label>
+    <input type="range" id="cooldown" min="200" max="2000" step="50" value="350">
+    <div class="ends muted"><span>Rapid</span><span>One at a time</span></div>
+
+    <div class="label">Next video</div>
+    <div class="segmented">
+      <label><input type="radio" name="next-on" value="up" checked><span>↑ Swipe up</span></label>
+      <label><input type="radio" name="next-on" value="down"><span>↓ Swipe down</span></label>
+    </div>
+  </div>
+</details>
+
+<details>
+  <summary>Troubleshooting</summary>
+  <div class="body">
+    <div class="muted">Change the video without the camera, to check AirSwipe can control this tab.</div>
+    <div class="row">
+      <button id="test-previous">Previous</button>
+      <button id="test-next">Next</button>
+    </div>
+    <p id="status" class="muted"></p>
+  </div>
+</details>
 <script src="popup.js"></script>

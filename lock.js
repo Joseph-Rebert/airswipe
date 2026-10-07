@@ -35,8 +35,9 @@ function nearest(hands, point, aspect) {
 }
 
 // hands: every hand MediaPipe found this frame (each 21 points).
-// Returns { index, fist }: which entry of `hands` is the locked hand (-1 if
-// none) and whether it is currently a fist.
+// Returns { index, fist, changed }: which entry of `hands` is the locked hand
+// (-1 if none), whether it is currently a fist, and whether the lock has just
+// moved to this hand.
 export function chooseHand(hands, now, aspect) {
   let index = locked ? nearest(hands, locked, aspect) : -1;
   if (index >= 0) {
@@ -44,6 +45,8 @@ export function chooseHand(hands, now, aspect) {
   } else if (locked && now - locked.lastSeenAt > LOST_MS) {
     locked = null;
   }
+
+  let changed = false;
 
   // Look for a fist on any hand that is not the locked one.
   const fistIndex = hands.findIndex((hand, i) => i !== index && isFist(hand, aspect));
@@ -57,8 +60,9 @@ export function chooseHand(hands, now, aspect) {
       locked = { ...wrist, lastSeenAt: now };
       candidate = null;
       index = fistIndex;
+      changed = true;
     }
   }
 
-  return { index, fist: index >= 0 && isFist(hands[index], aspect) };
+  return { index, fist: index >= 0 && isFist(hands[index], aspect), changed };
 }

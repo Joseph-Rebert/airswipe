@@ -22,6 +22,20 @@ const TRAIL_MS = 400;
 const SWIPE_SHOWN_MS = 700; // keep "swipe" on screen long enough to read
 
 let trail = [];
+
+function addToLog(text) {
+  const item = document.createElement('li');
+  item.textContent = `${new Date().toLocaleTimeString()}  ${text}`;
+  log.prepend(item);
+  while (log.children.length > 8) log.lastChild.remove();
+}
+
+// Which swipe direction means "next video"; follows the popup's setting.
+let nextOn = 'up';
+chrome.runtime.sendMessage({ type: 'get-settings' }).then((settings) => (nextOn = settings.nextOn));
+chrome.runtime.onMessage.addListener((msg) => {
+  if (msg.type === 'settings') nextOn = msg.nextOn;
+});
 let swipeShownUntil = 0;
 
 function drawSkeleton(hand, lineColor, dotColor) {
@@ -70,9 +84,9 @@ function draw(hands, tracked) {
   ctx.fill();
 }
 
-function showVerdict(text) {
+function showVerdict(text, counted = false) {
   verdict.textContent = text;
-  verdict.className = text.startsWith('swipe') ? 'swipe' : text.startsWith('ignored') ? 'ignored' : '';
+  verdict.className = counted ? 'swipe' : text.startsWith('ignored') ? 'ignored' : '';
 }
 
 function onFrame(frame) {
@@ -87,12 +101,10 @@ function onFrame(frame) {
   const now = performance.now();
   if (frame.swipe) {
     swipeShownUntil = now + SWIPE_SHOWN_MS;
-    const meaning = frame.swipe === 'up' ? 'next video' : 'previous video';
-    showVerdict(`swipe ${frame.swipe} → ${meaning}`);
-    const item = document.createElement('li');
-    item.textContent = `${new Date().toLocaleTimeString()}  swipe ${frame.swipe} (${meaning})`;
-    log.prepend(item);
-    while (log.children.length > 8) log.lastChild.remove();
+    const meaning = frame.swipe === nextOn ? 'next video' : 'previous video';
+    const text = `swipe ${frame.swipe} → ${meaning}`;
+    showVerdict(text, true);
+    addToLog(text);
   } else if (now > swipeShownUntil) {
     showVerdict(frame.verdict);
   }

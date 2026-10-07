@@ -29,6 +29,9 @@ FEATURES
 • Works on YouTube Shorts and TikTok.
 • Fist-to-choose: only the hand you pick is tracked, so other movement is ignored.
 • Live camera view shows exactly what the extension sees and why it did or didn't count a swipe.
+• Adjustable sensitivity and time between swipes, and your choice of swiping up or down for the next video.
+• An on-page cue shows when your hand is ready and flashes when a swipe counts.
+• Choose which camera to use if you have more than one.
 • One click to turn the camera off.
 
 PRIVATE BY DESIGN
@@ -49,6 +52,7 @@ AirSwipe lets users move to the next or previous video on YouTube Shorts and Tik
 
 Permission justifications:
 - offscreen: Runs the webcam and on-device hand tracking in a hidden extension page so it keeps working while the user browses YouTube or TikTok.
+- storage: Remembers the user's settings (sensitivity, swipe timing, swipe direction, chosen camera) on their own device.
 - scripting: Adds the extension's own content script to YouTube and TikTok tabs that were already open when the extension was installed or updated, so they work without a refresh.
 - Host permissions (youtube.com, tiktok.com): Needed to move to the next or previous video on these two sites when the user swipes. No page content is read or collected.
 - Remote code: No. All code, including the hand tracking library and model, is bundled in the package.

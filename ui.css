@@ -1,0 +1,50 @@
+/* Shared look for the popup, camera view and permission page. */
+:root {
+  --bg: #ffffff;
+  --surface: #f4f6fa;
+  --border: #e3e7ee;
+  --text: #14171c;
+  --muted: #667085;
+  --brand: #1f6bff;
+  --brand-hover: #1557d6;
+  --good: #16a34a;
+  --warn: #b45309;
+  --bad: #c62828;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111317;
+    --surface: #1b1e24;
+    --border: #2b2f38;
+    --text: #eceef2;
+    --muted: #98a1b0;
+    --brand: #4d8dff;
+    --brand-hover: #6ba0ff;
+    --good: #4ade80;
+    --warn: #fbbf24;
+    --bad: #f87171;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, -apple-system, sans-serif; }
+h1 { margin: 0; font-size: 16px; font-weight: 650; letter-spacing: -0.01em; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand img { width: 28px; height: 28px; }
+.muted { color: var(--muted); font-size: 12.5px; }
+.label { color: var(--muted); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+
+button { font: inherit; font-weight: 550; border-radius: 9px; padding: 8px 12px; cursor: pointer; border: 1px solid var(--border); background: var(--bg); color: var(--text); transition: background 0.12s, border-color 0.12s; }
+button:hover { border-color: var(--muted); }
+button.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+button.primary:hover { background: var(--brand-hover); border-color: var(--brand-hover); }
+button:focus-visible, input:focus-visible + .track { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+/* On/off switch built on a checkbox. */
+.switch { position: relative; display: inline-block; width: 44px; height: 26px; flex: none; }
+.switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.switch .track { position: absolute; inset: 0; border-radius: 13px; background: var(--border); transition: background 0.15s; pointer-events: none; }
+.switch .track::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); transition: transform 0.15s; }
+.switch input:checked + .track { background: var(--brand); }
+.switch input:checked + .track::after { transform: translateX(18px); }

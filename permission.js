@@ -9,6 +9,10 @@ const ADVICE = {
   NotReadableError:
     'The camera could not be started. Close other apps that use it (Zoom, FaceTime, Photo Booth), and check System Settings → Privacy & Security → Camera has Google Chrome switched on.',
   NotFoundError: 'No camera was found on this computer.',
+  CameraStopped:
+    'This happens when the camera is unplugged, the laptop lid is closed, or the computer sleeps. Turn the camera back on from the AirSwipe icon.',
+  TrackingFailed:
+    'Hand tracking stopped working. Turn the camera back on from the AirSwipe icon; if it keeps happening, restart Chrome.',
 };
 
 function explain(message) {

@@ -23,7 +23,16 @@ async function injectIntoOpenTabs() {
 
 // The camera lives in an "offscreen document": a hidden extension page that
 // keeps running while you browse. Camera on = that page exists.
-async function setCamera(on) {
+//
+// Requests are queued so two quick clicks cannot both try to create the page.
+let cameraQueue = Promise.resolve();
+function setCamera(on) {
+  const request = cameraQueue.then(() => applyCamera(on));
+  cameraQueue = request.catch(() => {});
+  return request;
+}
+
+async function applyCamera(on) {
   const running = await chrome.offscreen.hasDocument();
   if (on && !running) {
     await chrome.offscreen.createDocument({
@@ -33,19 +42,44 @@ async function setCamera(on) {
     });
   } else if (!on && running) {
     await chrome.offscreen.closeDocument();
+    sendToActiveTab({ type: 'status', state: 'off' });
   }
 }
 
-// Pass a swipe on to the content script in the tab you are looking at.
-// Resolves to a sentence saying what happened, shown in the popup.
-async function forwardSwipe(direction) {
+// Send a message to the content script in the tab you are looking at.
+// For a swipe, resolves to a sentence saying what happened, shown in the popup.
+async function sendToActiveTab(message) {
   const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
   if (!tab) return 'No active tab found.';
   try {
-    return await chrome.tabs.sendMessage(tab.id, { type: 'swipe', direction });
+    return await chrome.tabs.sendMessage(tab.id, message);
   } catch {
     return 'This tab is not listening. Open YouTube Shorts or TikTok, or refresh the page if it is already open.';
   }
+}
+
+// Show why the camera stopped on the setup page instead of failing silently.
+// Reuses a setup tab that is already open rather than piling up new ones.
+async function showCameraError(message) {
+  const url = chrome.runtime.getURL(`permission.html?error=${encodeURIComponent(message)}`);
+  const pages = await chrome.runtime.getContexts({ contextTypes: ['TAB'] });
+  const open = pages.find((page) => page.documentUrl.includes('/permission.html'));
+  if (open) chrome.tabs.update(open.tabId, { url, active: true });
+  else chrome.tabs.create({ url });
+}
+
+const DEFAULT_SETTINGS = { sensitivity: 5, cooldownMs: 350, nextOn: 'up', cameraId: '' };
+
+// Work out what a swipe means. The camera reports a direction ('up'/'down');
+// the popup's test buttons ask for an action ('next'/'previous'). The page
+// gets both: the action to perform and the direction to show in its arrow.
+async function resolveSwipe(msg) {
+  const { nextOn } = await chrome.storage.local.get(DEFAULT_SETTINGS);
+  const previousOn = nextOn === 'up' ? 'down' : 'up';
+  if (msg.action) {
+    return { type: 'swipe', action: msg.action, direction: msg.action === 'next' ? nextOn : previousOn };
+  }
+  return { type: 'swipe', direction: msg.direction, action: msg.direction === nextOn ? 'next' : 'previous' };
 }
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -54,20 +88,29 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true; // keeps sendResponse usable after this function returns
   }
   if (msg.type === 'set-camera') {
-    setCamera(msg.on).then(
-      () => sendResponse({ on: msg.on }),
-      (err) => sendResponse({ on: false, error: String(err) })
-    );
+    setCamera(msg.on)
+      .then(() => null, (err) => String(err))
+      .then(async (error) => sendResponse({ on: await chrome.offscreen.hasDocument(), error }));
     return true;
   }
   if (msg.type === 'swipe') {
-    forwardSwipe(msg.direction).then(sendResponse);
+    resolveSwipe(msg).then(sendToActiveTab).then(sendResponse);
     return true;
+  }
+  if (msg.type === 'status') {
+    sendToActiveTab(msg);
+  }
+  if (msg.type === 'get-settings') {
+    chrome.storage.local.get(DEFAULT_SETTINGS).then(sendResponse);
+    return true;
+  }
+  if (msg.type === 'settings') {
+    const { sensitivity, cooldownMs, nextOn, cameraId } = msg;
+    chrome.storage.local.set({ sensitivity, cooldownMs, nextOn, cameraId });
   }
   if (msg.type === 'camera-error') {
     console.warn('Camera failed:', msg.message);
     setCamera(false);
-    // Show the reason on the setup page instead of failing silently.
-    chrome.tabs.create({ url: `permission.html?error=${encodeURIComponent(msg.message)}` });
+    showCameraError(msg.message);
   }
 });
